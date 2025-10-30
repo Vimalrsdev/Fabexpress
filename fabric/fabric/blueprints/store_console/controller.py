@@ -6133,7 +6133,7 @@ def get_egrns_for_partial_delivery():
                 Having oI.TotalGarments<>count(OrderGarments.tagid)""")
 
                 # Executing the query.
-                orders_for_partial_delivery = db.engine.execute(sql).fetchall()
+                orders_for_partial_delivery = db.session.execute(sql).fetchall()
 
         except Exception as e:
             error_logger(f'Route: {request.path}').error(e)
