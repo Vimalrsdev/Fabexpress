@@ -11,10 +11,16 @@ Coded by: Krishna Prasad K
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from sqlalchemy.orm import DeclarativeBase
 
 from fabric.settings.project_settings import CURRENT_ENV
 
-db = SQLAlchemy()
+# Define base model for SQLAlchemy 2.0
+class Base(DeclarativeBase):
+    pass
+
+# Configure SQLAlchemy with the new base model
+db = SQLAlchemy(model_class=Base)
 
 login_manager = LoginManager()
 
@@ -53,7 +59,6 @@ def register_extensions(app):
     Function to register the Flask extensions
     @param app: Flask application object
     """
-
     db.init_app(app)
 
     login_manager.init_app(app)

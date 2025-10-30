@@ -16,6 +16,11 @@ class Config(object):
     JSON_SORT_KEYS = False
     JSONIFY_PRETTYPRINT_REGULAR = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # SQLAlchemy 2.0 compatibility settings
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
 
 
 # class ProductionConfig(Config):
