@@ -20,7 +20,7 @@ import requests
 
 from flask import Blueprint, request, current_app, redirect, send_from_directory
 # Edited by MMM
-from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.exc import MultipleResultsFound
 from sqlalchemy import case, func, literal, text, or_, and_, desc, asc
 # Edited by MMM
 from flask_cors import CORS
@@ -36,7 +36,7 @@ from fabric.modules.models import StoreUser, StoreUserLogin, PickupRequest, Orde
     CustomerTimeSlot, DeliveryUserDailyBranch, Rankingcityinfo, DeliveryUserEDCDetail, FabPickupTimeSlots, \
     PickupInstructions, CancellationReason,Screens,UserScreenAccess
 from fabric.generic.functions import get_current_date, generate_final_data, populate_errors, \
-    generate_hash, get_today, day_difference
+    generate_hash, get_today, day_difference, execute_with_commit
 from fabric.blueprints.delivery_app.helper import send_push_notification, rank_list, send_push_notification_test
 from fabric.generic.loggers import error_logger
 from fabric.middlewares.auth_guard import api_key_required, authenticate
@@ -84,7 +84,7 @@ def console_refresh():
     updated = False
     try:
         query = f""" EXEC JFSL.DBO.SpFabRefreshButtonConsole"""
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
         updated = True
     except Exception as e:
         error_logger(f'Route: {request.path}').error(e)
@@ -244,7 +244,7 @@ def set_customer_preferred_day():
             slot = time_slots.TimeSlot
             query = f"EXEC {SERVER_DB}.dbo.SPFabFetchtimeslotForApp @SP_Type='2', @Egrno=null, @Customercode='{customer_code}', " \
                     f"@Timeslot='{slot}', @Datedt=null, @Days='{day}',@modifiedby='FabExpress',@branchcode=null"
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             log_data = {
                 'delivery reschedule': query
             }
@@ -376,7 +376,7 @@ def make_branch_inactive():
             db.session.commit()
             #  For setting as Inactive
             inactive_query = f"exec {SERVER_DB}.dbo.UpdateBranchStatusInFabricare @branchcode={branch_code},@active=0, @name={store_usr_name}"
-            db.engine.execute(text(inactive_query).execution_options(autocommit=True))
+            execute_with_commit(text(inactive_query))
             log_data = {
                 'branch inactive': inactive_query
             }
@@ -388,7 +388,7 @@ def make_branch_inactive():
             db.session.commit()
             #  -- For setting as active
             active_query = f"exec {SERVER_DB}.dbo.UpdateBranchStatusInFabricare @branchcode={branch_code},@active=1,@name={store_usr_name}"
-            db.engine.execute(text(active_query).execution_options(autocommit=True))
+            execute_with_commit(text(active_query))
             log_data = {
                 'branch inactive': active_query
             }
@@ -3145,7 +3145,7 @@ def assign_pickup():
                 "query": query
                     }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 assigned = True
                 notify = True
                 if  PickupDate == get_today():
@@ -3225,7 +3225,7 @@ def assign_delivery():
                 "query": query
                     }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                
 
                 if isinstance(delivery_date, str):
@@ -3315,7 +3315,7 @@ def assign_delivery():
 #             # Getting the pickup request details from the DB.
 #             for trnno in TRNNo:
 #                 query = f""" EXEC JFSL_UAT.Dbo.SPFabAssignPickupDeliveryUpdate  @TRNNo = '{trnno}', @store_user_id = {user_id},  @delivery_user_id = {delivery_user_id}"""
-#                 db.engine.execute(text(query).execution_options(autocommit=True))
+#                 execute_with_commit(text(query))
 #                 log_data = {
 #                     'query': query
 #                     }
@@ -3507,7 +3507,7 @@ def assign_delivered_unpaid():
                 egrn = EGRN_list[i]
 
                 query = f""" EXEC JFSL.Dbo.SPFabAssignPickupDeliveryUpdate  @TRNNo = '{trnno}', @store_user_id = {user_id},  @delivery_user_id = {delivery_user_id}"""
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
            
             assigned = True
 
@@ -4787,7 +4787,7 @@ def update_store_user():
                         branches = ','.join(branch_codes)
                         # update branch code to fabricare
                         # query = f"EXEC {SERVER_DB}.dbo.UpdateUserBranchinFabricare @branches='{branches}',@username='{user_name}'"
-                        # db.engine.execute(text(query).execution_options(autocommit=True))
+                        # execute_with_commit(text(query))
                 else:
                     error_msg = 'Can not update the admin.'
             else:
@@ -5272,7 +5272,7 @@ def update_store_user():
 #                 query = f"EXEC JFSL_UAT..FetchtimeslotForApp @SP_Type='1',@Egrno='{order_details.EGRN}'," \
 #                         f"@Customercode='{customer_code.CustomerCode}',@Timeslot='{time_slot}',@Datedt='{formatted_rescheduled_date}'," \
 #                         f"@Days=null,@modifiedby='FabExpress',@branchcode='{delivery_request_details.BranchCode}'"
-#                 db.engine.execute(text(query).execution_options(autocommit=True))
+#                 execute_with_commit(text(query))
 #                 log_data = {
 #                     'query of reschedule delivery': query
 #                 }
@@ -5343,7 +5343,7 @@ def reschedule_delivery():
                     'query:':query
                          }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 is_rescheduled = True
 
                 store_controller_queries.trigger_out_for_activity_sms('OUT_FOR_DELIVERY',
@@ -5370,7 +5370,7 @@ def reschedule_delivery():
             # query = f"EXEC JFSL..FetchtimeslotForApp @SP_Type='1',@Egrno='{EGRN}'," \
             #             f"@Customercode='{CustomerCode}',@Timeslot='{time_slot}',@Datedt='{formatted_rescheduled_date}'," \
             #             f"@Days=null,@modifiedby='FabExpress',@branchcode='{BranchCode}'"
-            # db.engine.execute(text(query).execution_options(autocommit=True))
+            # execute_with_commit(text(query))
 
             if formatted_rescheduled_date1 <= get_today():
                 log_data = {
@@ -9273,7 +9273,7 @@ def add_pickup_instruction_icons():
 #         # Check if delivery user is active
 #         try:
 #             get_updated_jfsl_data_query = f"Exec {SERVER_DB}.dbo.SP_MiscIssuesCorrectionForCustomerAppDB"
-#             db.engine.execute(text(get_updated_jfsl_data_query).execution_options(autocommit=True))
+#             execute_with_commit(text(get_updated_jfsl_data_query))
 
 #             log_data = {
 #                 'get_updated_jfsl_data_query :': get_updated_jfsl_data_query
@@ -9911,7 +9911,7 @@ def reschedule_pickup_():
                    
                 }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 is_rescheduled = True
                 message = f" Dear {CustomerName}, your pickup with booking ID {BookingId} is rescheduled to {rescheduled_date} between {TimeSlotFrom} to {TimeSlotTo}."
                 print(message)
@@ -10156,7 +10156,7 @@ def cancel_pickup():
                     return generate_final_data('CUSTOM_FAIL')
                 else:
                     cancel_pickups_query = f"EXEC JFSL.[dbo].[SPPickupCancelledUpdateCustApp] @DuserId = {user_id}, @IsCancelled = 1,  @BookingID = {booking_id}, @CancelReasonID = {cancel_reason_id}, @CancelRemarks = '{cancel_remarks}', @StoreUserID = {user_id}"
-                    db.engine.execute(text(cancel_pickups_query).execution_options(autocommit=True))
+                    execute_with_commit(text(cancel_pickups_query))
                     log_data = {
                         'cancel or reschedule pickup': cancel_pickups_query
                     }

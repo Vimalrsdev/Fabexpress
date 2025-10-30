@@ -29,13 +29,13 @@ import os
 import random
 import requests
 from fabric import db
-from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.exc import MultipleResultsFound
 from werkzeug.utils import secure_filename
 # Importing authentication middleware.
 from fabric.middlewares.auth_guard import api_key_required, authenticate
 # Importing the generally used functions module.
 from fabric.generic.functions import json_input, generate_final_data, populate_errors, generate_hash, \
-    get_current_date, get_today, send_sms, login_send_sms, get_greeting_text,send_sms_laundry
+    get_current_date, get_today, send_sms, login_send_sms, get_greeting_text, send_sms_laundry, execute_with_commit
 from .helper import PickupDetails, send_push_notification, send_test_push_notification, DeliveryDetails, rank_list, \
     add_instruction, get_garment_price, checksum_generator, get_paytm_credentials, check_paytm_payment_status, \
     first_3_activity_dict
@@ -3119,7 +3119,7 @@ def get_pickup_cancel_reschedule_reasons():
 #             query = f"EXEC {SERVER_DB}.dbo.FetchtimeslotForApp @SP_Type='1', @Egrno='{order_details.EGRN}', @Customercode='{customer_code}', " \
 #                     f"@Timeslot='{time_slot}',@Datedt='{formatted_rescheduled_date}', @Days=null, @modifiedby='FabExpress'," \
 #                     f"@branchcode='{delivery_request_details.BranchCode}'"
-#             db.engine.execute(text(query).execution_options(autocommit=True))
+#             execute_with_commit(text(query))
 #             log_data = {
 #                 'delivery reschedule': query
 #             }
@@ -3181,7 +3181,7 @@ def reschedule_delivery():
             'query:': query
                 }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             is_rescheduled = True
 
             # SMS via alert engine.
@@ -3208,7 +3208,7 @@ def reschedule_delivery():
             query = f"EXEC {SERVER_DB}.dbo.SPFabFetchtimeslotForApp @SP_Type='1', @Egrno='{EGRN}', @Customercode='{CustomerCode}', " \
                     f"@Timeslot='{time_slot}',@Datedt='{formatted_rescheduled_date}', @Days=null, @modifiedby='FabExpress'," \
                     f"@branchcode='{BranchCode}'"
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             log_data = {
                 'delivery reschedule': query
             }
@@ -3678,7 +3678,7 @@ def add_order_garments():
                 "query": query
                 }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             is_added = True
         except Exception as e:
             error_logger(f'Route: {request.path}').error(e)
@@ -3768,7 +3768,7 @@ def remove_order_garment():
         try:
             query = f""" EXEC JFSL.Dbo.[SPDeleteTempOrderGarmentsCustApp]  @OrderGarmentID = '{OrderGarmentID}'"""
             
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             Removed = True
 
         except Exception as e:
@@ -4480,7 +4480,7 @@ def update_order_garment_service_type():
             'query': query
             }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             update = True
         except Exception as e:
             db.session.rollback()
@@ -4745,7 +4745,7 @@ def finalize_order1():
                                 # If this is a adhoc pickup and if it is scheduled for today, generate Booking Id.
                                 # Generating the BookingId in realtime.
                                 query = f"EXEC {LOCAL_DB}.dbo.[USP_INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE] @PickUprequestId={pickup_request.PickupRequestId}"
-                                db.engine.execute(text(query).execution_options(autocommit=True))
+                                execute_with_commit(text(query))
 
                                 log_data = {
                                     'INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE': query
@@ -5033,14 +5033,14 @@ def finalize_order1():
                     delivery_charge_applied = (
                         f"EXEC {SERVER_DB}.dbo.ComputeDeliveryChargeforFabexpress @EGRN='{egrn}',"
                         f"@ENABLEORDISABLE={1}")
-                    db.engine.execute(text(delivery_charge_applied).execution_options(autocommit=True))
+                    execute_with_commit(text(delivery_charge_applied))
                     log_data = {
                         'delivery_charge_applied': delivery_charge_applied
                     }
                     info_logger(f'Route: {request.path}').info(json.dumps(log_data))
                     update_customer_outstanding = f"EXEC {SERVER_DB}.dbo.UpdateCustomer_Outstanding_Unsettled_Data " \
                                                   f"@customercode ='{customer_code}'"
-                    db.engine.execute(text(update_customer_outstanding).execution_options(autocommit=True))
+                    execute_with_commit(text(update_customer_outstanding))
                     # If the GPS co-ordinates are provided, save the GPS position into the TravelLogs table.
                     if lat is not None and long is not None:
                         delivery_controller_queries.save_travel_log('Pickup', user_id, order_id, None, lat, long)
@@ -5205,7 +5205,7 @@ def finalize_order():
                     }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
 
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
 
             print("query")
             EGRN = db.session.execute(
@@ -5236,7 +5236,7 @@ def finalize_order():
                         'query': query
                     }
                     info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
         except Exception as e:
             error_logger(f'Route: {request.path}').error(e)
         try:
@@ -5295,7 +5295,7 @@ def finalize_order():
                     # }
                     # info_logger(f'Route: {request.path}').info(json.dumps(log_data))
                     # # result = CallSP(query).execute().fetchall()
-                    # db.engine.execute(text(query).execution_options(autocommit=True))
+                    # execute_with_commit(text(query))
 
         except Exception as e:
             error_logger(f'Route: {request.path}').error(e)
@@ -5306,7 +5306,7 @@ def finalize_order():
                 'query': query,
             }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
 
             final_data = generate_final_data('DATA_SAVED')
             try:
@@ -6416,7 +6416,7 @@ def update_customer_address_live():
             query =f""" EXEC JFSL.Dbo.[SPUpdateCustomerInfoCustApp] @CustomerCode ='{CustomerCode}',@address_line_1 = '{address_line_1}', @address_line_2 = '{address_line_2}'
                     ,@address_line_3 = '{address_line_3}' , @landmark ='{landmark}', @pincode ='{pincode}',@delivery_user_branch_code ='{delivery_user_branch_code}',@address_name ='{address_type}'
                     ,@mobile_number ='{mobile_number}' ,@lat ='{lat}' ,@long ='{long}',@geo_location = '{geo_location}',@TRNNO = '{TRNNo}',@BookingID = '{BookingID}'"""
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             address_updated = True
             log_data = {
                 "query":query
@@ -6486,7 +6486,7 @@ def update_customer_address():
             # query =f""" EXEC JFSL_UAT.Dbo.[SPUpdateCustomerInfoCustApp] @CustomerCode ='{CustomerCode}',@address_line_1 = '{address_line_1}', @address_line_2 = '{address_line_2}'
             #         ,@address_line_3 = '{address_line_3}' , @landmark ='{landmark}', @pincode ='{pincode}',@delivery_user_branch_code ='{delivery_user_branch_code}',@address_name ='{address_type}'
             #         ,@mobile_number ='{mobile_number}' ,@lat ='{lat}' ,@long ='{long}',@geo_location = '{geo_location}',@TRNNO = '{TRNNo}',@BookingID = '{BookingID}'"""
-            # db.engine.execute(text(query).execution_options(autocommit=True))
+            # execute_with_commit(text(query))
 
             query = text("""
                 EXEC JFSL.Dbo.SPUpdateCustomerInfoCustApp 
@@ -6523,7 +6523,7 @@ def update_customer_address():
                 "BookingID": BookingID
             }
 
-            db.engine.execute(query.execution_options(autocommit=True), params)
+            execute_with_commit(query, params)
 
             #address_updated = True
 
@@ -7558,7 +7558,7 @@ def save_customer():
 
                 log_data = {'query:': query}
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 Saved = True
 
         except Exception as e:
@@ -7579,7 +7579,7 @@ def save_customer():
             query = f"""EXEC JFSL.Dbo.SPCustomerInfoInsertSMSCustApp 
                         @NewCutomerCode = '{CustomerCode}'"""
             print(query)
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
 
             final_data = generate_final_data('DATA_SAVED')
             final_data['result'] = {
@@ -7681,7 +7681,7 @@ def save_customer():
 #                     #         f"@AddressLines2=NULL,@CityCode2=NULL," \
 #                     #         f"@AreaCode2=NULL, @pincode2 = NULL, " \
 #                     #         f"@IsAddress2Deleted =NULL "
-#                     # db.engine.execute(text(query).execution_options(autocommit=True))
+#                     # execute_with_commit(text(query))
 #                     if address_name == 'Address 1':
 #                         query = f"EXEC {SERVER_DB}.dbo.UPDATEFABRICARECUSTOMERDATA @CUSTOMERCODE='{customer_code.CustomerCode}',@DOB='',@EMAIL='',@PROFESSION='',@GENDER='',@flatno1='{address_line_1}',@AddressLines1='{address_line_2} {address_line_3}',@CityCode1='{essential_details.CityCode}',@AreaCode1='{essential_details.AreaCode}',@flatno2= NULL,@AddressLines2='',@CityCode2='',@AreaCode2='',@IsAddress2Deleted=0,@lat1 ='{lat}',@long1 ='{long}',@lat2 ='',@long2 ='',@GeoLocality1 ='{geo_location}',@GeoLocality2 =NULL, @geoPinCode1={pincode}, @geoPinCode2=NULL, @ActiveBranch={delivery_user_branch_code}"
 #                         update_address = f"EXEC {SERVER_DB}.dbo.UpdateCustomerAppAddress @CUSTOMERCODE='{customer_code.CustomerCode}',@DOB='',@EMAIL='',@PROFESSION='',@GENDER='',@AddressLines1='{address_line_2} {address_line_3}',@CityCode1='{essential_details.CityCode}',@AreaCode1='{essential_details.AreaCode}',@AddressLines2='',@CityCode2='',@AreaCode2='',@IsAddress2Deleted=0 ,@addressname = 'Address 1',@lat1 ='{lat}',@long1 ='{long}',@lat2 ='',@long2 =''," \
@@ -7696,10 +7696,10 @@ def save_customer():
 #                     update_lat_long = f"EXEC {SERVER_DB}.dbo.USP_latlonglogs @AddressName='{address_name}',@Lat={lat},@Long={long},@bookingid=NULL," \
 #                                       f"@CustomerCode={customer_code.CustomerCode},@branchcode=NULL, @source " \
 #                                       f"='FabExpress',  @userid={0}"
-#                     db.engine.execute(text(update_lat_long).execution_options(autocommit=True))
+#                     execute_with_commit(text(update_lat_long))
 #                     try:
-#                         db.engine.execute(text(query).execution_options(autocommit=True))
-#                         db.engine.execute(text(update_address).execution_options(autocommit=True))
+#                         execute_with_commit(text(query))
+#                         execute_with_commit(text(update_address))
 
 #                         log_data = {
 #                             'query Updating the delivery address in the POS :': query,
@@ -7774,7 +7774,7 @@ def add_address():
                 
                 }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             is_added = True
         except Exception as e:
             error_logger(f'Route: {request.path}').error(e)
@@ -11315,7 +11315,7 @@ def reopen_complaint():
                     complaint_status.RecordLastUpdatedDate = get_current_date()
                     db.session.commit()
                     query = f"EXEC {CRM}.dbo.usp_Update_CRM_COMPLAINT_Status @AMEYOTICKETID_FOR_CRM_COMPLAINT='{complaint_status.AmeyoTicketId}'"
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
                 except Exception as e:
                     error_logger(f'Route: {request.path}').error(e)
                 updated = True
@@ -11689,7 +11689,7 @@ def finalize_rewash():
             }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
             rewashed = True
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             
 
         except Exception as e:
@@ -11852,7 +11852,7 @@ def raise_complaint():
                 'query': query
                     }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 complaint = True
 
         except Exception as e:
@@ -12184,7 +12184,7 @@ def edit_complaint():
                     db.session.commit()
                     if complaint.CRMComplaintId is not None:
                         query = f"EXEC {CRM}.dbo.usp_Update_CRM_COMPLAINT_Details @ComplaintId='{complaint.CRMComplaintId}'"
-                        db.engine.execute(text(query).execution_options(autocommit=True))
+                        execute_with_commit(text(query))
                     else:
                         pass
                 except Exception as e:
@@ -13401,7 +13401,7 @@ def get_pending_pickup_details_():
             query = f"EXEC JFSL.dbo.SPBranchServiceTatsCustApp @BRANCHCODE= '{branch_code}',@BookingID={BookingId}"
             service_tats = CallSP(query).execute().fetchall()
             query = f" EXEC JFSL.dbo.SPFabGarmentsPriceInsert   @BRANCHCODE ='{branch_code}'"
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             for service_tat in service_tats:
                 service_tat['ServiceTatIcon'] = service_tat['ServiceTatName'].lower()
             
@@ -13478,7 +13478,7 @@ def cancel_pickup():
                     
                 }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             result = True
             if result:
 
@@ -13565,7 +13565,7 @@ def reschedule_pickup():
                 }
             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
             
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             result = True
             if result:
                 message = f" Dear {CustomerName}, your pickup with booking ID {BookingID} is rescheduled to {ReschuduleDate} between {TimeSlotFrom} to {TimeSlotTo}."
@@ -13745,7 +13745,7 @@ def make_delivery():
                                 'query': query
                                 }
                         info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                        db.engine.execute(text(query).execution_options(autocommit=True))
+                        execute_with_commit(text(query))
                         delivered = True
                     else:
                         pass
@@ -13856,7 +13856,7 @@ def make_delivery():
                         workbook.save(file_path)
                         # query = f"EXEC JFSL.[dbo].[SendCommanEmailFabXpress] @FilePath='{file_name}', @EmailTo='jfsl.mdm@jyothy.com', @EmailCC='jyothy.support@mapmymarketing.ai;rahul.shettigar@jyothy.com;abhinav.ambasta@jyothy.com', @Subject='Pickup/Delivery Distance more than 10 KM', @Body='Please find the attached report'"
 
-                        # db.engine.execute(text(query).execution_options(autocommit=True))
+                        # execute_with_commit(text(query))
 
                     # Edited by MMM
                     # Checking the status of the selected order garments and amount to pay .
@@ -13892,7 +13892,7 @@ def make_delivery():
                                 'query': query
                                 }
                             info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                            db.engine.execute(text(query).execution_options(autocommit=True))
+                            execute_with_commit(text(query))
                             delivered = True
                             query = f""" EXEC JFSL.Dbo.SPPendingDeliveriesDetailedScreen @user_id = {user_id} ,@TRNNo = '{TRNNo}',@TRNNoBasisGarmentsCounts = {1}"""
                             DeliveryGarmentsCount = CallSP(query).execute().fetchone()
@@ -14049,7 +14049,7 @@ def make_delivery():
                                             payment_link = response_data.get('result')
 
                                             query = f"EXEC {LOCAL_DB}.dbo.DeliveredPaymentPendingSMSTrigger @Amount='{str(amount)}',@Link='{payment_link}',@MobileNo='{str(MobileNumber)}',@EGRNNo='{EGRN}'"
-                                            db.engine.execute(text(query).execution_options(autocommit=True))
+                                            execute_with_commit(text(query))
                                             log_data = {
                                                 'sms_query': query
                                             }
@@ -14061,7 +14061,7 @@ def make_delivery():
                                     payment_link = 'https://fabspa.in/payments'
 
                                     query = f"EXEC {LOCAL_DB}.dbo.DeliveredPaymentPendingSMSTrigger @Amount='{str(amount)}',@Link='{payment_link}',@MobileNo='{str(MobileNumber)}',@EGRNNo='{EGRN}'"
-                                    db.engine.execute(text(query).execution_options(autocommit=True))
+                                    execute_with_commit(text(query))
                                     log_data = {
                                         'sms_query1': query
                                     }
@@ -14375,7 +14375,7 @@ def create_adhoc_pickup_request():
                     
                 }
                 info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
                 Created = True
                 print(Created)
                 BookingID = db.session.execute(
@@ -14616,7 +14616,7 @@ def create_adhoc_pickup_request():
 #                                         # if formated_rewash_date != get_today():
 #                                         # Generating the BookingId in realtime.
 #                                         query = f"EXEC {LOCAL_DB}.dbo.[USP_INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE] @PickUprequestId={new_pickup_request.PickupRequestId}"
-#                                         db.engine.execute(text(query).execution_options(autocommit=True))
+#                                         execute_with_commit(text(query))
 #                                         result = True
 #                                         log_data = {
 #                                             'reschedule pickup': query
@@ -14910,7 +14910,7 @@ def future_date_rewash():
                     }
                     info_logger(f'Route: {request.path}').info(json.dumps(log_data))
 
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
                     Created = True
 
                     BookingID = db.session.execute(
