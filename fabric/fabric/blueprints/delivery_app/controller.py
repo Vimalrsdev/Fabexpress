@@ -29,7 +29,11 @@ import os
 import random
 import requests
 from fabric import db
-from sqlalchemy.exc import MultipleResultsFound
+# Compatible with both SQLAlchemy 1.x and 2.x
+try:
+    from sqlalchemy.exc import MultipleResultsFound
+except ImportError:
+    from sqlalchemy.orm.exc import MultipleResultsFound
 from werkzeug.utils import secure_filename
 # Importing authentication middleware.
 from fabric.middlewares.auth_guard import api_key_required, authenticate

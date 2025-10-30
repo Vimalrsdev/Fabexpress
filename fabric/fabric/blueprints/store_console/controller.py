@@ -20,7 +20,11 @@ import requests
 
 from flask import Blueprint, request, current_app, redirect, send_from_directory
 # Edited by MMM
-from sqlalchemy.exc import MultipleResultsFound
+# Compatible with both SQLAlchemy 1.x and 2.x
+try:
+    from sqlalchemy.exc import MultipleResultsFound
+except ImportError:
+    from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy import case, func, literal, text, or_, and_, desc, asc
 # Edited by MMM
 from flask_cors import CORS

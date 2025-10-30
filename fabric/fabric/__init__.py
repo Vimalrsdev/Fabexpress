@@ -11,16 +11,21 @@ Coded by: Krishna Prasad K
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from sqlalchemy.orm import DeclarativeBase
 
 from fabric.settings.project_settings import CURRENT_ENV
 
-# Define base model for SQLAlchemy 2.0
-class Base(DeclarativeBase):
-    pass
-
-# Configure SQLAlchemy with the new base model
-db = SQLAlchemy(model_class=Base)
+# Configure SQLAlchemy - compatible with both 1.x and 2.x
+try:
+    # Try SQLAlchemy 2.0 approach first
+    from sqlalchemy.orm import DeclarativeBase
+    
+    class Base(DeclarativeBase):
+        pass
+    
+    db = SQLAlchemy(model_class=Base)
+except ImportError:
+    # Fallback to SQLAlchemy 1.x approach
+    db = SQLAlchemy()
 
 login_manager = LoginManager()
 

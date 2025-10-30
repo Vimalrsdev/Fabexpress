@@ -556,23 +556,37 @@ def send_sms_product(mobile_number, message, sender):
 
 def execute_with_commit(query_text):
     """
-    SQLAlchemy 2.0 compatible function for executing queries with autocommit behavior.
+    SQLAlchemy compatible function for executing queries with autocommit behavior.
+    Works with both SQLAlchemy 1.x and 2.x
     Replaces the deprecated db.engine.execute(text(query).execution_options(autocommit=True))
     
     @param query_text: SQL query string or SQLAlchemy text() object
     @return: Result of the execution
     """
     from sqlalchemy import text as sql_text
+    import sqlalchemy
     
     # Convert string to text() if needed
     if isinstance(query_text, str):
         query_text = sql_text(query_text)
     
     try:
-        # Execute and commit using session
-        result = db.session.execute(query_text)
-        db.session.commit()
-        return result
+        # Check SQLAlchemy version and use appropriate method
+        if hasattr(sqlalchemy, '__version__') and sqlalchemy.__version__.startswith('2.'):
+            # SQLAlchemy 2.x: Use session.execute
+            result = db.session.execute(query_text)
+            db.session.commit()
+            return result
+        else:
+            # SQLAlchemy 1.x: Use engine.execute or session
+            try:
+                result = db.session.execute(query_text)
+                db.session.commit()
+                return result
+            except Exception:
+                # Fallback to engine.execute for older versions
+                result = db.engine.execute(query_text)
+                return result
     except Exception as e:
         db.session.rollback()
         raise e
