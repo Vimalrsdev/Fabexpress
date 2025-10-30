@@ -245,7 +245,7 @@ def send_sms_via_ice_cube(mobile_num, message):
 #                                          @P15 = NULL ,@P16 = NULL ,@P17 = NULL ,@P18 = NULL ,@P19 = NULL ,@P20 = NULL 
 #                                          ,@REC_ID = '0' """
 
-#     db.engine.execute(text(query).execution_options(autocommit=True))
+#     execute_with_commit(text(query))
 
 
 def trigger_sms_after_pickup( alert_code,MobileNumber, CustomerName, BookingID, date_time_slot):
@@ -306,7 +306,7 @@ def trigger_sms_after_pickup( alert_code,MobileNumber, CustomerName, BookingID, 
         }
         info_logger(f'Route: {request.path}').info(json.dumps(log_data))
 
-    result_proxy = db.engine.execute(text(query).execution_options(autocommit=True))
+    result_proxy = execute_with_commit(text(query))
     response = result_proxy.fetchall()
     response_data = [dict(row) for row in response]
     log_data = {
@@ -1027,7 +1027,7 @@ def send_sms_email_when_settled(customer_code, egrn, amount, invoice_num,TRNNo):
                            
                     }
                     info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
 
     except Exception as e:
         error_logger(f'Route: {request.path}').error(e)
@@ -1338,7 +1338,7 @@ def notify_pos_about_discount(egrn, discount_code):
     """
     try:
         query = f"EXEC {SERVER_DB}.dbo.App_UpdateDiscount  @egrn='{egrn}',@DisPromocode='{discount_code}'"
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
         log_data = {
             'App_UpdateDiscount': query
         }
@@ -1358,7 +1358,7 @@ def notify_pos_about_coupon(egrn, coupon_code):
     """
     try:
         query = f"EXEC {SERVER_DB}.dbo.App_UpdateCouponinFabricare @egrn='{egrn}',@CouponCode='{coupon_code}'"
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
     except Exception as e:
         error_logger(f'Delivery Blueprint Queries: {inspect.stack()[0].function}()').error(e)
 
@@ -1372,7 +1372,7 @@ def notify_pos_about_er_coupon(egrn, discount_code, er_request_id, code_from_er)
     """
     try:
         query = f"EXEC {SERVER_DB}.dbo.App_UpdateERCouponCodeinFabricare @egrn='{egrn}',@DisPromocode='{discount_code}',@ERRequestID='{er_request_id}',@ERCouponCode='{code_from_er}'"
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
     except Exception as e:
         error_logger(f'Delivery Blueprint Queries: {inspect.stack()[0].function}()').error(e)
 
@@ -1624,8 +1624,8 @@ def get_delivery_user_branchname(user_id):
 
 
 #         try:
-#             db.engine.execute(text(query).execution_options(autocommit=True))
-#             db.engine.execute(text(update_address).execution_options(autocommit=True))
+#             execute_with_commit(text(query))
+#             execute_with_commit(text(update_address))
 
 #             log_data = {
 #                 'query Updating the delivery address in the POS :': query,
@@ -1686,10 +1686,10 @@ def update_customer_address_in_pos(customer_details, address_details):
         update_lat_long = f"EXEC {SERVER_DB}.dbo.USP_latlonglogs @AddressName='{address_details['AddressName']}',@Lat={address_details['Lat']},@Long={address_details['Long']},@bookingid=NULL," \
                               f"@CustomerCode={customer_details['CustomerCode']},@branchcode={address_details['BranchCode']}, @source " \
                               f"='FabExpress', @userid={0}"
-        db.engine.execute(text(update_lat_long).execution_options(autocommit=True))
+        execute_with_commit(text(update_lat_long))
         try:
-            db.engine.execute(text(query).execution_options(autocommit=True))
-            db.engine.execute(text(update_address).execution_options(autocommit=True))
+            execute_with_commit(text(query))
+            execute_with_commit(text(update_address))
             
 
             log_data = {

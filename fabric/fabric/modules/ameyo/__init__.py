@@ -76,7 +76,7 @@ def add_complaint(CustomerName,MobileNo,CustomerCode, ameyo_customer_id, egrn, a
                                 
                                 """
 
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
 
                 else:
                     try:
@@ -98,7 +98,7 @@ def add_complaint(CustomerName,MobileNo,CustomerCode, ameyo_customer_id, egrn, a
                 query = f"EXEC {LOCAL_DB}.dbo.usp_CREATE_CRM_COMPLAINT_FROM_MOBILE_APP @AMEYOTICKETID_FOR_CRM_COMPLAINT='{ticket.get('ticketId')}'"
                 print(query)
                 complaint_created = True
-                db.engine.execute(text(query).execution_options(autocommit=True))
+                execute_with_commit(text(query))
             except Exception as e:
                 error_logger(f'Route: {request.path}').error(e)
 
@@ -269,7 +269,7 @@ def rewash(order_details, rewash_garment_list):
 
     # After creating the pickup request data, generate BookingId.
     query = f"EXEC {LOCAL_DB}.dbo.[USP_INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE] @PickUprequestId={new_pickup_request.PickupRequestId}"
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
 
     # Getting the BookingId. If BookingId is not generated,rewash order can't be created.
     booking_id = db.session.query(PickupRequest.BookingId).filter(
@@ -504,7 +504,7 @@ def rewash(user_id, rewash_garment_list, TRNNo, TagNo, Duserlat, Duserlong, Cust
         }
         info_logger(f'Route: {request.path}').info(json.dumps(log))
 
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
         permit_to_rewash = True
 
         # Getting the BookingId. If BookingId is not generated,rewash order can't be created.
@@ -621,7 +621,7 @@ def rewash(user_id, rewash_garment_list, TRNNo, TagNo, Duserlat, Duserlong, Cust
 
             }
             info_logger(f'Route: {request.path}').info(json.dumps(log))
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
 
             rewashed = True
 
@@ -693,14 +693,14 @@ def adhoc_rewash(complaint_garment_list, user_id, time_slot_id, address_id, bran
 
             # After creating the pickup request data, generate BookingId.
             # query = f"EXEC {LOCAL_DB}.dbo.[USP_INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE] @PickUprequestId={new_pickup_request.PickupRequestId}"
-            # db.engine.execute(text(query).execution_options(autocommit=True))
+            # execute_with_commit(text(query))
             # Getting the BookingId. If BookingId is not generated,rewash order can't be created.
             pickup_details = db.session.query(PickupRequest).filter(
                 PickupRequest.PickupRequestId == new_pickup_request.PickupRequestId).one_or_none()
             pickup_request_id = new_pickup_request.PickupRequestId
         else:
             # query = f"EXEC {LOCAL_DB}.dbo.[USP_INSERT_ADHOC_PICKUP_FROM_MOBILEAPP_TO_FABRICARE] @PickUprequestId={pickup_request_id}"
-            # db.engine.execute(text(query).execution_options(autocommit=True))
+            # execute_with_commit(text(query))
             pickup_details = db.session.query(PickupRequest).filter(
                 PickupRequest.PickupRequestId == pickup_request_id).one_or_none()
 
@@ -856,7 +856,7 @@ def rewash_complaint(egrn,CustomerCode, CustomerName,MobileNo, BranchCode ,Ameyo
                         query = f"""EXEC JFSL_UAT.Dbo.EXEC SPFabExistsComplaintsUpdate @AmeyoTicketId ='{AmeyoTicketId}' ,@JFSLTicketId ='{JFSLTicketId}' ,@TicketSubject ='{TicketSubject}'  
                             ,@AmeyoTicketSourceType ='{AmeyoTicketSourceType}' ,@AmeyoTicketStatus ='{AmeyoTicketStatus}' ,@CampaignId ='{CampaignId}' ,@QueueId ='{QueueId}', @AssignedUserId ='{AssignedUserId}'
                             ,@TagId=''"""
-                        db.engine.execute(text(query).execution_options(autocommit=True))
+                        execute_with_commit(text(query))
                     except Exception as e:
                         error_logger(f'Ameyo: {inspect.stack()[0].function}()').error(e)
                 except Exception as e:
@@ -865,7 +865,7 @@ def rewash_complaint(egrn,CustomerCode, CustomerName,MobileNo, BranchCode ,Ameyo
             query = f"EXEC {LOCAL_DB}.dbo.usp_CREATE_CRM_COMPLAINT_FROM_MOBILE_APP " \
                     f"@AMEYOTICKETID_FOR_CRM_COMPLAINT='{ticket['ticketId']}' "
 
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
     else:
         query = f"EXEC {LOCAL_DB}.dbo.usp_CREATE_CRM_COMPLAINT_FROM_MOBILE_APP " \
                 f"@AMEYOTICKETID_FOR_CRM_COMPLAINT='{AmeyoTicketId}'"
@@ -873,7 +873,7 @@ def rewash_complaint(egrn,CustomerCode, CustomerName,MobileNo, BranchCode ,Ameyo
             'SP-update-complaintId': query
         }
         info_logger(f'Route: {request.path}').info(json.dumps(log_data))
-        db.engine.execute(text(query).execution_options(autocommit=True))
+        execute_with_commit(text(query))
 
 
     return True
@@ -922,7 +922,7 @@ def same_order_complaint(single_ameyo_orders, customer_id):
 
                     query = f"EXEC {LOCAL_DB}.dbo.usp_CREATE_CRM_COMPLAINT_FROM_MOBILE_APP " \
                             f"@AMEYOTICKETID_FOR_CRM_COMPLAINT='{ticket['ticketId']}' "
-                    db.engine.execute(text(query).execution_options(autocommit=True))
+                    execute_with_commit(text(query))
                     log_data = {
                         'same_order_ameyo': query,
                     }

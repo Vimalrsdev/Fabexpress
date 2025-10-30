@@ -14,7 +14,18 @@ from flask_login import LoginManager
 
 from fabric.settings.project_settings import CURRENT_ENV
 
-db = SQLAlchemy()
+# Configure SQLAlchemy - compatible with both 1.x and 2.x
+try:
+    # Try SQLAlchemy 2.0 approach first
+    from sqlalchemy.orm import DeclarativeBase
+    
+    class Base(DeclarativeBase):
+        pass
+    
+    db = SQLAlchemy(model_class=Base)
+except ImportError:
+    # Fallback to SQLAlchemy 1.x approach
+    db = SQLAlchemy()
 
 login_manager = LoginManager()
 
@@ -53,7 +64,6 @@ def register_extensions(app):
     Function to register the Flask extensions
     @param app: Flask application object
     """
-
     db.init_app(app)
 
     login_manager.init_app(app)

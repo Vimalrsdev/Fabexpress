@@ -1358,7 +1358,7 @@ def apply_lp(customer_code, egrn, amount_to_pay):
 #         @AVAILABLELOYALTYPOINTS={available_lp['available_points']}"""
 
 #         # Calling the SP.
-#         db.engine.execute(text(query).execution_options(autocommit=True))
+#         execute_with_commit(text(query))
 
 #         # Based on the payment modes, save the payment details into the POS.
 #         if attached_coupons:
@@ -1430,7 +1430,7 @@ def apply_lp(customer_code, egrn, amount_to_pay):
 #                                              ,@P19 = NULL
 #                                              ,@P20 = NULL
 #                                              ,@REC_ID = '0'"""
-#             db.engine.execute(text(query).execution_options(autocommit=True))
+#             execute_with_commit(text(query))
 #             log_data = {
 #                 'SMS': query
 #             }
@@ -1524,7 +1524,7 @@ def create_trn(TRNNo, egrn, customer_code, egrn_details, attached_coupons,
     @AVAILABLELOYALTYPOINTS={available_lp['available_points']}"""
 
     # Calling the SP.
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
 
     # Based on the payment modes, save the payment details into the POS.
     if attached_coupons:
@@ -1594,7 +1594,7 @@ def create_trn(TRNNo, egrn, customer_code, egrn_details, attached_coupons,
                                              ,@P19 = NULL
                                              ,@P20 = NULL
                                              ,@REC_ID = '0'"""
-            db.engine.execute(text(query).execution_options(autocommit=True))
+            execute_with_commit(text(query))
             log_data = {
                 'SMS': query
             }

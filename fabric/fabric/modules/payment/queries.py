@@ -107,7 +107,7 @@ def save_payment_details_into_pos(payment_mode, amount, invoice_id, coupon_code)
             @RaiseComplain=1
             """
     # Calling the SP.
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
 
 
 def save_partial_payment_details(delivery_request_id, order_id, egrn, payment_mode, amount):

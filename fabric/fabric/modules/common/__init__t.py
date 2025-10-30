@@ -182,7 +182,7 @@ def notify_pos_regarding_pickup_reschedule_or_cancel(pickup_request_id, booking_
     query = f"""EXEC {LOCAL_DB}.dbo.USP_UPDATE_CANCELLEDorRESCHEDULED_PICKUP_IN_FABRICARE @PICKUPREQUESTID={pickup_request_id},@ISCANCELLED={is_cancelled},@ISRESCHEDULE={is_rescheduled},@ISCOB={is_cob},@BOOKINGID={booking_id}"""
 
     # Executing the SP.
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
     log_data = {
         'cancel or reschedule pickup': query
     }
@@ -235,7 +235,7 @@ def send_out_for_activity_sms(alert_code, customer_name, mobile_number, booking_
                                          ,@REC_ID = '0'"""
 
     # Calling the SP.
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
     log_data = {
         'send_out_for_activity_sms': query
         }
@@ -285,7 +285,7 @@ def send_reschedule_sms(alert_code, customer_name, mobile_number, egrn, garments
                                          ,@REC_ID = '0'"""
 
     # Calling the SP.
-    db.engine.execute(text(query).execution_options(autocommit=True))
+    execute_with_commit(text(query))
 
 # def check_rewash_open_pickups(address_id, customer_id):
 #     """
