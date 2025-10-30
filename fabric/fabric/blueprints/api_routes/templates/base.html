@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ data['title'] }}</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('api_routes.static', filename='uikit.min.css')}}">
+    <script type="text/javascript" src="{{url_for('api_routes.static', filename='uikit.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('api_routes.static', filename='uikit-icons.min.js')}}"></script>
+</head>
+<body class="uk-margin-large-bottom">
+<div class="uk-container uk-container-large">
+    {% if data.page != 'login' %}
+    <p class="uk-text-right uk-margin-remove-bottom uk-margin-top"><a href="{{url_for('api_routes.logout') }}"><span class="uk-margin-small-right" uk-icon="icon: sign-out; ratio: 2"></span>Logout</a></p>
+    {% endif %}
+    {% block main %}
+    {% endblock %}
+</div>
+</body>
+</html>

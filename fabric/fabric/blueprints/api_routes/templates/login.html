@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<h1 class="uk-heading-small uk-text-center">Login</h1>
+<hr class="uk-divider-icon">
+
+<div class="uk-text-center">
+    <form method="post" action="{{ url_for('api_routes.login') }}">
+
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon" uk-icon="icon: user"></span>
+                <input class="uk-input" type="text" placeholder="username" name="username">
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                <input class="uk-input" type="password" placeholder="password" name="password">
+            </div>
+        </div>
+
+        <button type="submit" class="uk-button uk-button-primary">Log in</button>
+
+    </form>
+</div>
+
+{% endblock main %}

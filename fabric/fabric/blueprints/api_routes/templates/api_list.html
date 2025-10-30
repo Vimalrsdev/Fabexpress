@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<h1 class="uk-heading-small uk-margin-remove">API Routes</h1>
+<hr class="uk-divider-icon">
+
+<ul uk-accordion>
+    <li>
+        <a class="uk-accordion-title uk-text-success" href="#">Delivery APIs</a>
+        <div class="uk-accordion-content">
+            <p>List of APIs associated with the pickup/delivery app.</p>
+            <a href="{{url_for('api_routes.delivery') }}">View APIs ({{data.delivery_apis_count}} APIs)</a>
+        </div>
+    </li>
+    <li>
+        <a class="uk-accordion-title uk-text-success" href="#">Store Web Console API</a>
+        <div class="uk-accordion-content">
+            <p>List of APIs associated with the pickup/delivery store console used by store persons.</p>
+            <a href="{{url_for('api_routes.store') }}">View APIs ({{data.store_console_apis_count}} APIs)</a>
+        </div>
+    </li>
+    <li>
+        <a class="uk-accordion-title uk-text-warning" href="#">Customer APP API</a>
+        <div class="uk-accordion-content">
+            <p>List of APIs associated with the FabricAgent customer app.</p>
+            <a href="#">View APIs ({{data.customer_app_apis_count}} APIs)</a>
+        </div>
+    </li>
+    <li>
+        <a class="uk-accordion-title uk-text-success" href="#">Assets API</a>
+        <div class="uk-accordion-content">
+            <p>List of APIs associated regarding static assets files.</p>
+            <a href="{{url_for('api_routes.assets') }}">View APIs ({{data.assets_apis_count}} APIs)</a>
+        </div>
+    </li>
+</ul>
+
+{% endblock main %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb uk-margin-remove">
+    <li><a href="{{url_for('api_routes.api_list') }}">Home</a></li>
+    <li><a href="#">{{ data.page }}</a></li>
+
+</ul>
+
+<h1 class="uk-heading-small uk-margin-remove">{{ data.title }}</h1>
+<hr class="uk-divider-icon">
+<H5 class="uk-text-meta">Base API URL: {{ data.base_url }}</H5>
+<div class="uk-overflow-auto">
+    <table class="uk-table uk-table-striped">
+        <thead>
+        <tr>
+            <th>Route</th>
+            <th>Method</th>
+            <th>Desc</th>
+            <th>Example Request Body</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for route in routes %}
+        <tr>
+            <td>{{ route.Route }}</td>
+            <td>
+                {% if route.Method=="GET" %}
+                <h4 class="uk-text-warning">{{ route.Method }}</h4>
+                {% elif route.Method=="POST" %}
+                <h4 class="uk-text-success">{{ route.Method }}</h4>
+                {% elif route.Method=="PUT" %}
+                <h4 class="uk-text-primary">{{ route.Method }}</h4>
+                {% elif route.Method=="DELETE" %}
+                <h4 class="uk-text-danger">{{ route.Method }}</h4>
+                {%endif %}
+            </td>
+            <td>{{ route.Desc }}</td>
+            {% if route.EgRequestBody == None %}
+            <td>N/A</td>
+            {% else %}
+            <td>
+                <pre id="json_body{{route.Id}}">
+                    <script>
+                        document.getElementById("json_body{{route.Id}}").textContent = JSON.stringify({{ route.EgRequestBody | safe }}, undefined, 2);
+                    </script>
+                </pre>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock main %}
